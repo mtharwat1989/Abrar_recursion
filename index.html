@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>منصة أبرار الحربي | مراجعة Recursion</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@400;500;700;800&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>
+tailwind.config = { theme:{ extend:{ colors:{ gold:{DEFAULT:'#D4AF37',light:'#F5D67B',dark:'#8C6A00'}, royal:{900:'#080D29',800:'#0E1642',700:'#162066',600:'#1E2C8A'} }, fontFamily:{ cairo:['Cairo','sans-serif'], taj:['Tajawal','sans-serif'], pop:['Poppins','sans-serif'] } } } }
+</script>
+<style>
+*{font-family:'Cairo','Tajawal',sans-serif}
+body{background:#070B24;color:#fff;overflow-x:hidden}
+.gold-text{background:linear-gradient(135deg,#FFF6C8 0%,#F5D67B 20%,#D4AF37 45%,#FFF0A0 60%,#B8860B 80%,#F5D67B 100%);-webkit-background-clip:text;background-clip:text;color:transparent;background-size:200% auto;animation:shine 4s linear infinite}
+@keyframes shine{to{background-position:200% center}}
+.glass{background:linear-gradient(145deg,rgba(255,255,255,.09),rgba(255,255,255,.03));backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid rgba(212,175,55,.28)}
+.gold-border{position:relative;border:1px solid rgba(212,175,55,.5)}
+.gold-border::before{content:'';position:absolute;inset:-1px;border-radius:inherit;padding:1px;background:linear-gradient(135deg,#F5D67B,#8C6A00,#FFF6C8,#B8860B);-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;opacity:.9}
+.btn-gold{background:linear-gradient(135deg,#F8E28A 0%,#D4AF37 35%,#A67C00 70%,#F5D67B 100%);background-size:200% auto;color:#1a1400;font-weight:900;box-shadow:0 8px 30px rgba(212,175,55,.4),inset 0 1px 0 rgba(255,255,255,.7);transition:.35s}
+.btn-gold:hover{background-position:left center;transform:translateY(-2px) scale(1.02);box-shadow:0 15px 45px rgba(212,175,55,.6)}
+.btn-ghost{border:1px solid rgba(212,175,55,.4);transition:.3s}
+.btn-ghost:hover{background:rgba(212,175,55,.12);border-color:#D4AF37}
+.blob{position:fixed;border-radius:50%;filter:blur(90px);opacity:.35;pointer-events:none;z-index:0;animation:float 12s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-40px) scale(1.08)}}
+#stars{position:fixed;inset:0;z-index:0;pointer-events:none}
+.opt{transition:.25s;text-align:right;width:100%;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);border-radius:16px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start;cursor:pointer;position:relative;overflow:hidden}
+.opt:hover:not(:disabled){border-color:#D4AF37;background:rgba(212,175,55,.1);transform:translateY(-2px)}
+.opt:disabled{cursor:default}
+.opt.correct{border-color:#22c55e!important;background:linear-gradient(135deg,rgba(34,197,94,.25),rgba(34,197,94,.1))!important;box-shadow:0 0 25px rgba(34,197,94,.4)}
+.opt.wrong{border-color:#ef4444!important;background:linear-gradient(135deg,rgba(239,68,68,.25),rgba(239,68,68,.1))!important;box-shadow:0 0 25px rgba(239,68,68,.35)}
+.opt.dim{opacity:.45}
+.opt-letter{flex-shrink:0;width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:900;background:linear-gradient(135deg,#D4AF37,#8C6A00);color:#1a1400}
+.shake{animation:shake .5s}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-10px)}40%{transform:translateX(10px)}60%{transform:translateX(-7px)}80%{transform:translateX(7px)}}
+.pop{animation:pop .5s cubic-bezier(.68,-.55,.265,1.55)}
+@keyframes pop{0%{transform:scale(.8);opacity:0}100%{transform:scale(1);opacity:1}}
+.glow-pulse{animation:glowP 2s infinite}
+@keyframes glowP{0%,100%{box-shadow:0 0 20px rgba(212,175,55,.4)}50%{box-shadow:0 0 45px rgba(212,175,55,.8)}}
+.progress-gold{background:linear-gradient(90deg,#8C6A00,#D4AF37,#FFF6C8,#D4AF37);background-size:200% auto;animation:shine 2.5s linear infinite}
+.pal-btn{width:42px;height:42px;border-radius:12px;font-weight:800;font-size:14px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);transition:.25s}
+.pal-btn:hover{transform:scale(1.1);border-color:#D4AF37}
+.pal-btn.current{border:2px solid #F5D67B;box-shadow:0 0 18px rgba(212,175,55,.7);transform:scale(1.12)}
+.pal-btn.ok{background:linear-gradient(135deg,#16a34a,#15803d);border-color:#22c55e}
+.pal-btn.bad{background:linear-gradient(135deg,#dc2626,#991b1b);border-color:#ef4444}
+.pal-btn.skip{background:rgba(245,214,123,.2);border-color:#D4AF37}
+.ar-box{background:linear-gradient(135deg,rgba(212,175,55,.16),rgba(212,175,55,.06));border:1px dashed rgba(212,175,55,.6);border-radius:14px}
+.feedback-ok{background:linear-gradient(135deg,rgba(34,197,94,.2),rgba(34,197,94,.08));border:1px solid #22c55e}
+.feedback-bad{background:linear-gradient(135deg,rgba(239,68,68,.2),rgba(239,68,68,.08));border:1px solid #ef4444}
+.score-ring{transform:rotate(-90deg)}
+.score-ring circle{transition:stroke-dashoffset 2s ease}
+.trophy-float{animation:trophyF 3s ease-in-out infinite}
+@keyframes trophyF{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-14px) rotate(3deg)}}
+#celebrateOverlay{transition:.4s}
+.crown-shine{position:relative;overflow:hidden}
+.crown-shine::after{content:'';position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.5),transparent);transform:skewX(-20deg);animation:sheen 3s infinite}
+@keyframes sheen{0%{left:-80%}60%,100%{left:130%}}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-track{background:#0E1642}
+::-webkit-scrollbar-thumb{background:linear-gradient(#D4AF37,#8C6A00);border-radius:10px}
+.toast{animation:slideIn .4s cubic-bezier(.68,-.55,.265,1.55)}
+@keyframes slideIn{from{transform:translateY(30px) scale(.9);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
+@media print{body *{visibility:hidden}#reportSection,#reportSection *{visibility:visible}#reportSection{position:absolute;top:0;right:0;left:0;background:#fff!important;color:#000!important} .no-print{display:none!important}}
+.chapter-badge{background:linear-gradient(135deg,rgba(212,175,55,.2),rgba(212,175,55,.05));border:1px solid rgba(212,175,55,.4)}
+.hero-pattern{background-image:radial-gradient(rgba(212,175,55,.15) 1px,transparent 1px);background-size:22px 22px}
+.streak-fire{animation:fire .8s infinite alternate}
+@keyframes fire{from{transform:scale(1)}to{transform:scale(1.15) rotate(-5deg)}}
+
+.cm-node{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:10px 12px;transition:.25s}
+.cm-node:hover{border-color:#D4AF37;background:rgba(212,175,55,.1);transform:translateY(-2px)}
+.cm-node b{display:block;color:#F5D67B;font-family:'Poppins','Cairo',sans-serif;font-size:13.5px;direction:ltr;text-align:left}
+.cm-node span{display:block;font-size:12.5px;line-height:1.75;color:rgba(255,255,255,.82);margin-top:2px}
+.cm-card{position:relative;border-radius:22px;padding:18px;transition:.3s}
+.cm-card::before{content:'';position:absolute;top:-22px;right:50%;width:2px;height:22px;background:linear-gradient(#D4AF37,transparent);opacity:.7}
+.cm-card.done{box-shadow:0 0 30px rgba(34,197,94,.35);border-color:#22c55e!important}
+.cm-flow{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px;direction:ltr;font-family:'Poppins',sans-serif;font-weight:600;font-size:12.5px}
+.cm-flow .st{padding:7px 12px;border-radius:12px;background:linear-gradient(135deg,#1E2C8A,#162066);border:1px solid rgba(212,175,55,.5)}
+.cm-flow .ar{color:#F5D67B;font-weight:900}
+@keyframes pulseLine{0%,100%{opacity:.5}50%{opacity:1}}
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div class="blob" style="width:520px;height:520px;background:#D4AF37;top:-150px;right:-150px"></div>
+<div class="blob" style="width:420px;height:420px;background:#1E2C8A;bottom:10%;left:-120px;animation-delay:2s"></div>
+<div class="blob" style="width:300px;height:300px;background:#7C3AED;top:40%;right:30%;opacity:.2;animation-delay:4s"></div>
+
+<!-- PRELOADER -->
+<div id="preloader" class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#070B24] transition-opacity duration-700">
+<div class="w-24 h-24 rounded-3xl btn-gold flex items-center justify-center text-5xl glow-pulse">👑</div>
+<h1 class="mt-6 text-2xl font-black gold-text">منصة أبرار الحربي الذهبية</h1>
+<p class="text-white/60 mt-2">جاري تجهيز تجربة ملكية تليق ببطلة البرمجة...</p>
+<div class="w-64 h-2 mt-6 rounded-full bg-white/10 overflow-hidden"><div id="loadBar" class="h-full progress-gold rounded-full" style="width:0%"></div></div>
+</div>
+
+<!-- HEADER -->
+<header class="sticky top-0 z-50 glass border-b border-[#D4AF37]/30">
+<div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-2xl btn-gold flex items-center justify-center text-2xl crown-shine">👑</div>
+<div><div class="font-black text-lg leading-none">أبرار <span class="gold-text">الحربي</span></div><div class="text-[12px] text-white/60">هياكل البيانات • Recursion • كويز التفوق</div></div>
+</div>
+<div class="hidden md:flex items-center gap-2 text-sm">
+<a href="#home" class="px-4 py-2 rounded-xl hover:bg-white/10 transition">الرئيسية</a>
+<a href="#quizSection" class="px-4 py-2 rounded-xl hover:bg-white/10 transition">الاختبار</a>
+<a href="#reportSection" class="px-4 py-2 rounded-xl hover:bg-white/10 transition">التقرير</a>
+</div>
+<div class="flex items-center gap-2">
+<div class="hidden sm:flex items-center gap-2 glass rounded-xl px-3 py-2 text-sm"><i class="fa-solid fa-bolt text-[#F5D67B]"></i><span id="hdrScore" class="font-black">0</span><span class="text-white/40">نقطة</span></div>
+<button onclick="toggleSound()" id="soundBtn" class="w-11 h-11 rounded-xl btn-ghost flex items-center justify-center text-xl">🔊</button>
+</div>
+</div>
+<div class="h-1 bg-white/10"><div id="topProgress" class="h-full progress-gold transition-all duration-500" style="width:0%"></div></div>
+</header>
+
+<!-- HERO -->
+<section id="home" class="relative z-10 max-w-7xl mx-auto px-4 pt-8 pb-2">
+<div class="grid lg:grid-cols-2 gap-6 items-stretch">
+<div class="glass gold-border rounded-3xl p-7 md:p-10 relative overflow-hidden hero-pattern flex flex-col justify-center">
+<div class="absolute top-0 left-0 w-full h-1 progress-gold"></div>
+<div class="inline-flex items-center gap-2 chapter-badge rounded-full px-4 py-2 text-sm font-bold text-[#F5D67B] self-start"><span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span> Recursion • 40 سؤال اختيار من متعدد</div>
+<h1 class="text-3xl md:text-5xl font-black leading-[1.25] mt-5">أهلًا بالبطلة <span class="gold-text">أبرار الحربي</span> 🏆</h1>
+<div class="flex flex-wrap gap-3 mt-6">
+<button onclick="scrollToQuiz()" class="btn-gold rounded-2xl px-8 py-4 text-lg"><i class="fa-solid fa-play ml-2"></i> ابدأ الاختبار</button>
+<button onclick="translateAllToggle()" class="btn-ghost rounded-2xl px-6 py-4 font-bold">🌐 ترجمة الكل</button>
+</div>
+<div class="grid grid-cols-2 gap-3 mt-7">
+<div class="rounded-2xl bg-white/5 border border-white/10 p-4 text-center"><div class="text-2xl font-black gold-text">40</div><div class="text-xs text-white/60 font-bold">سؤالًا اختياريًا (MCQ)</div></div>
+<div class="rounded-2xl bg-white/5 border border-white/10 p-4 text-center"><div class="text-2xl font-black gold-text" id="bestScoreHero">0%</div><div class="text-xs text-white/60 font-bold">أفضل نتيجة لكِ</div></div>
+</div>
+</div>
+<div class="flex flex-col gap-6">
+<div class="glass gold-border rounded-3xl p-6 text-center relative overflow-hidden crown-shine">
+<div class="trophy-float text-7xl">🏆</div>
+<h3 class="font-black text-xl mt-2">بطاقة البطلة الذهبية</h3>
+<div class="flex items-center justify-center gap-3 mt-4">
+<div class="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl font-black btn-gold">أ</div>
+<div class="text-right"><div class="font-black">أبرار الحربي</div><div class="text-xs text-[#F5D67B] font-bold">⭐ المستوى <span id="levelNum">1</span> • <span id="xpNum">0</span> XP</div><div class="w-40 h-2 bg-white/10 rounded-full mt-2 overflow-hidden"><div id="xpBar" class="h-full progress-gold" style="width:0%"></div></div></div>
+</div>
+<div class="grid grid-cols-3 gap-2 mt-5 text-sm">
+<div class="rounded-xl bg-black/30 border border-white/10 p-3"><div class="font-black text-lg" id="statCorrect">0</div><div class="text-green-400 text-xs font-bold">✅ صحيحة</div></div>
+<div class="rounded-xl bg-black/30 border border-white/10 p-3"><div class="font-black text-lg" id="statWrong">0</div><div class="text-red-400 text-xs font-bold">❌ خاطئة</div></div>
+<div class="rounded-xl bg-black/30 border border-white/10 p-3"><div class="font-black text-lg" id="statStreak">0 🔥</div><div class="text-orange-300 text-xs font-bold">سلسلة التوهج</div></div>
+</div>
+<div class="mt-4 flex items-center justify-center gap-2 text-sm bg-black/30 rounded-xl p-3 border border-[#D4AF37]/30"><i class="fa-regular fa-clock text-[#F5D67B]"></i> الوقت: <b id="timerHero">00:00</b> <span class="text-white/40">|</span> <span>السؤال <b id="heroQpos" class="text-[#F5D67B]">1</b> / 40</span></div>
+</div>
+
+<div class="grid grid-cols-2 gap-4">
+<button onclick="setMode('train')" id="modeTrain" class="glass rounded-2xl p-5 text-right border-2 border-[#D4AF37] transition hover:scale-[1.02]">
+<div class="text-2xl">🎓</div><div class="font-black mt-1">وضع التدريب البطولي</div><div class="text-xs text-white/60 mt-1 leading-5">محاولات للتعلم + شرح + التقييم على أول إجابة</div><div class="text-[11px] mt-2 font-black text-green-400">● مُفعّل الآن</div>
+</button>
+<button onclick="setMode('exam')" id="modeExam" class="glass rounded-2xl p-5 text-right border-2 border-transparent transition hover:scale-[1.02]">
+<div class="text-2xl">⏱️</div><div class="font-black mt-1">وضع الكويز الحقيقي</div><div class="text-xs text-white/60 mt-1 leading-5">محاولة واحدة فقط بدون رجعة مثل الاختبار</div><div class="text-[11px] mt-2 font-black text-white/40" id="examLabel">○ اضغطي للتفعيل</div>
+</button>
+</div>
+</div>
+</div>
+
+</section>
+
+<!-- QUIZ -->
+<section id="quizSection" class="relative z-10 max-w-7xl mx-auto px-4 py-6">
+<div class="grid lg:grid-cols-[1fr_300px] gap-6 items-start">
+
+<div class="glass gold-border rounded-3xl overflow-hidden">
+<div class="p-4 md:p-5 flex flex-wrap items-center justify-between gap-3 bg-black/20 border-b border-[#D4AF37]/20">
+<div class="flex items-center gap-2 flex-wrap">
+<span id="qCounter" class="btn-gold rounded-xl px-4 py-2 text-sm">السؤال 1 / 40</span>
+<span id="qPageBadge" class="rounded-xl px-3 py-2 text-sm font-bold bg-white/10 border border-white/15">📄 صفحة 3</span>
+<span id="qTypeBadge" class="rounded-xl px-3 py-2 text-sm font-bold bg-purple-500/20 border border-purple-400/40 text-purple-200">صح / خطأ</span>
+<span id="attemptBadge" class="rounded-xl px-3 py-2 text-sm font-bold bg-white/10 border border-white/15 hidden">المحاولة 2</span>
+</div>
+<div class="flex items-center gap-2">
+<button onclick="toggleBookmark()" id="bmBtn" class="w-10 h-10 rounded-xl btn-ghost flex items-center justify-center" title="حفظ في المفضلة">🤍</button>
+<button onclick="toggleTranslateCurrent()" id="trBtn" class="rounded-xl px-4 py-2.5 font-black text-sm btn-gold">🌐 ترجم</button>
+</div>
+</div>
+
+<div class="h-2 bg-white/10"><div id="quizProgress" class="h-full progress-gold transition-all duration-500" style="width:2%"></div></div>
+
+<div id="qCard" class="p-5 md:p-8">
+<div class="flex items-center gap-2 text-xs text-white/40 font-bold mb-3"><i class="fa-solid fa-book-open text-[#D4AF37]"></i> أسئلة مستخرجة من شرائح الشابتر (بالترتيب) — أجيبي لتكملي التحدي</div>
+<h2 id="qEn" dir="ltr" class="text-left font-pop font-semibold text-lg md:text-2xl leading-9 bg-black/30 border border-white/10 rounded-2xl p-5"></h2>
+<div id="qArBox" class="ar-box p-4 mt-3 hidden pop"><div class="text-[11px] font-black text-[#F5D67B] mb-1">🇸🇦 الترجمة العربية المباشرة:</div><div id="qAr" class="font-bold leading-8 text-[15px] md:text-lg"></div></div>
+<div id="optsGrid" class="grid gap-3 mt-5"></div>
+<div id="feedbackBox" class="mt-5 hidden rounded-2xl p-5 text-center font-black text-lg pop"></div>
+<div id="explainBox" class="mt-3 hidden rounded-2xl p-4 bg-blue-500/10 border border-blue-400/40 text-sm leading-7"></div>
+<div class="flex flex-wrap items-center justify-between gap-3 mt-6">
+<div class="flex gap-2">
+<button onclick="prevQ()" class="btn-ghost rounded-xl px-5 py-3 font-bold">→ السابق</button>
+<button onclick="nextQ()" class="btn-gold rounded-xl px-7 py-3">التالي ←</button>
+</div>
+<div class="flex gap-2">
+<button onclick="skipQ()" class="btn-ghost rounded-xl px-4 py-3 text-sm font-bold">⏭️ تخطي</button>
+<button onclick="confirmFinish()" class="rounded-xl px-5 py-3 text-sm font-black bg-gradient-to-l from-red-500 to-orange-500 hover:scale-105 transition shadow-lg">🏁 إنهاء و عرض النتيجة</button>
+</div>
+</div>
+</div>
+</div>
+
+<div class="flex flex-col gap-5">
+<div id="paletteCard" class="glass rounded-3xl p-5 gold-border">
+<h3 class="font-black flex items-center gap-2"><span class="text-xl">🗺️</span> خريطة المعركة <span class="text-xs font-bold text-white/40">(40 سؤالًا)</span></h3>
+<div class="flex flex-wrap gap-2 mt-3 text-[11px] font-bold">
+<button onclick="setFilter('all')" class="filter-btn px-3 py-1.5 rounded-lg bg-[#D4AF37] text-black" data-f="all">الكل</button>
+<button onclick="setFilter('un')" class="filter-btn px-3 py-1.5 rounded-lg bg-white/10" data-f="un">غير مجاب</button>
+<button onclick="setFilter('ok')" class="filter-btn px-3 py-1.5 rounded-lg bg-white/10" data-f="ok">صح</button>
+<button onclick="setFilter('bad')" class="filter-btn px-3 py-1.5 rounded-lg bg-white/10" data-f="bad">خطأ</button>
+<button onclick="setFilter('bm')" class="filter-btn px-3 py-1.5 rounded-lg bg-white/10" data-f="bm">⭐ مفضلة</button>
+</div>
+<div id="palette" class="grid grid-cols-5 gap-2 mt-4 max-h-[380px] overflow-y-auto p-1"></div>
+<div class="mt-4 text-xs leading-6 text-white/60 bg-black/30 rounded-xl p-3 border border-white/10">🟩 صح من أول مرة • 🟥 يحتاج مراجعة • 🟨 متخطّى • ✨ الذهبي = سؤالك الحالي<br>💡 التقييم النهائي يعتمد على <b class="text-[#F5D67B]">أول إجابة</b> في وضع التدريب.</div>
+<button onclick="confirmFinish()" class="btn-gold w-full rounded-xl py-3 mt-3 font-black">📊 اعرضي تقرير أبرار النهائي</button>
+</div>
+
+<div class="glass rounded-3xl p-5">
+<h3 class="font-black">⚔️ أسلحة البطلة</h3>
+<div class="grid grid-cols-2 gap-2 mt-3 text-sm font-bold">
+<button onclick="translateAllToggle()" class="btn-ghost rounded-xl py-3">🌐 ترجمة الكل</button>
+<button onclick="toggleSound()" class="btn-ghost rounded-xl py-3">🔊 الصوت</button>
+<button onclick="restartQuiz()" class="btn-ghost rounded-xl py-3">🔄 من جديد</button>
+<button onclick="reviewBookmarks()" class="btn-ghost rounded-xl py-3">⭐ المفضلة</button>
+</div>
+<div class="mt-3 rounded-xl bg-black/30 border border-[#D4AF37]/30 p-3 text-xs leading-6"><b class="text-[#F5D67B]">نصيحة ذهبية يا أبرار:</b> استخدمي لوحة المفاتيح: <b>1-4</b> للإجابة • <b>T</b> للترجمة • <b>→ ←</b> للتنقل.</div>
+</div>
+</div>
+</div>
+</section>
+
+<!-- REPORT -->
+<section id="reportSection" class="relative z-10 max-w-7xl mx-auto px-4 py-8 hidden">
+<div class="glass gold-border rounded-3xl p-6 md:p-10 text-center relative overflow-hidden">
+<div class="absolute top-0 left-0 w-full h-1.5 progress-gold"></div>
+<div class="trophy-float text-8xl">🏆</div>
+<h2 class="text-3xl md:text-4xl font-black mt-3">تقرير البطلة <span class="gold-text">أبرار الحربي</span></h2>
+<p id="reportSubtitle" class="text-white/60 mt-2 font-bold"></p>
+<div class="grid md:grid-cols-3 gap-6 mt-8 items-center">
+<div class="flex flex-col items-center">
+<div class="relative w-52 h-52">
+<svg class="score-ring w-52 h-52" viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="12"/><circle id="scoreCircle" cx="60" cy="60" r="52" fill="none" stroke="url(#gg)" stroke-width="12" stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="326.7"/><defs><linearGradient id="gg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#F5D67B"/><stop offset="50%" stop-color="#D4AF37"/><stop offset="100%" stop-color="#FFF6C8"/></linearGradient></defs></svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center"><div id="finalPct" class="text-4xl font-black gold-text">0%</div><div class="text-xs text-white/40 font-bold">النسبة النهائية</div></div>
+</div>
+<div id="gradeBadge" class="mt-3 px-6 py-2 rounded-full font-black btn-gold"></div>
+</div>
+<div class="grid grid-cols-2 gap-3">
+<div class="rounded-2xl bg-green-500/10 border border-green-500/40 p-5"><div class="text-3xl font-black text-green-400" id="rCorrect">0</div><div class="text-xs font-bold text-green-300">✅ إجابات صحيحة</div></div>
+<div class="rounded-2xl bg-red-500/10 border border-red-500/40 p-5"><div class="text-3xl font-black text-red-400" id="rWrong">0</div><div class="text-xs font-bold text-red-300">❌ تحتاج مراجعة</div></div>
+<div class="rounded-2xl bg-white/5 border border-white/15 p-5"><div class="text-3xl font-black gold-text" id="rTime">00:00</div><div class="text-xs font-bold text-white/60">⏱️ زمن الإنجاز</div></div>
+<div class="rounded-2xl bg-white/5 border border-white/15 p-5"><div class="text-3xl font-black gold-text" id="rStreak">0</div><div class="text-xs font-bold text-white/60">🔥 أفضل سلسلة</div></div>
+</div>
+<div class="glass rounded-2xl p-4">
+<canvas id="chartDoughnut" height="220"></canvas>
+<div class="mt-2 text-xs text-white/40 font-bold">توزيع الأداء: صح / خطأ / متخطّى</div>
+<hr class="border-white/10 my-3">
+<canvas id="chartBars" height="220"></canvas>
+<div class="mt-2 text-xs text-white/40 font-bold">الأداء حسب القسم: أساسيات الـ Recursion • Factorial وFibonacci • البنية العامة والأمثلة</div>
+</div>
+</div>
+<div id="finalMessage" class="mt-6 text-xl font-black leading-9 rounded-2xl p-5 feedback-ok"></div>
+<div class="mt-6 rounded-2xl p-5 border border-green-500/60 bg-green-500/10 text-center no-print">
+<div class="font-black text-lg">📲 إرسال تقرير الإجابات للدكتور محمد</div>
+<p class="text-white/70 text-sm mt-1 leading-7">اضغطي الزر لفتح واتساب برسالة جاهزة فيها نتيجتكِ وأخطاءكِ، ثم اضغطي «إرسال».</p>
+<button onclick="sendWhatsApp()" class="rounded-2xl px-8 py-4 mt-3 font-black text-lg text-white hover:scale-105 transition shadow-lg" style="background:linear-gradient(135deg,#25D366,#128C7E)"><i class="fa-brands fa-whatsapp ml-2"></i> أرسل التقرير للدكتور محمد عبر واتساب</button>
+</div>
+
+<div class="flex flex-wrap justify-center gap-3 mt-6 no-print">
+<button onclick="showOnlyWrong=false;renderReportList();toggleWrongBtn(this)" class="btn-gold rounded-xl px-6 py-3 font-black">📋 عرض الكل (40)</button>
+<button onclick="showOnlyWrong=true;renderReportList();toggleWrongBtn(this)" class="btn-ghost rounded-xl px-6 py-3 font-bold">❌ مراجعة الأخطاء فقط</button>
+<button onclick="restartQuiz()" class="btn-ghost rounded-xl px-6 py-3 font-bold">🔄 إعادة الاختبار</button>
+<button onclick="window.print()" class="btn-ghost rounded-xl px-6 py-3 font-bold">🖨️ طباعة التقرير</button>
+<button onclick="shareResult()" class="btn-ghost rounded-xl px-6 py-3 font-bold">📤 مشاركة النتيجة</button>
+<button onclick="sendWhatsApp()" class="rounded-xl px-6 py-3 font-black text-white" style="background:linear-gradient(135deg,#25D366,#128C7E)">📲 واتساب الدكتور محمد</button>
+</div>
+</div>
+
+<div class="mt-6 flex items-center gap-3">
+<div class="flex-1 h-px bg-gradient-to-l from-transparent via-[#D4AF37] to-transparent"></div>
+<h3 class="font-black text-xl whitespace-nowrap">📝 كشف الدرجات التفصيلي <span class="text-sm text-white/40">مع الإجابات النموذجية</span></h3>
+<div class="flex-1 h-px bg-gradient-to-l from-transparent via-[#D4AF37] to-transparent"></div>
+</div>
+<div id="reportList" class="grid gap-4 mt-5"></div>
+</section>
+
+<footer class="relative z-10 max-w-7xl mx-auto px-4 pb-10 pt-4 text-center text-white/40 text-sm">
+<div class="glass rounded-2xl p-5">صُنع بفخر 👑 للبطلة <b class="gold-text">أبرار الحربي</b> • مراجعة Recursion (COCS-304 Data Structures) • بالتوفيق في الكويز يا بطلة 🚀<br><span class="text-xs">40 سؤالًا اختياريًا بالترتيب مع ترجمة فورية وتقرير ذكي</span></div>
+</footer>
+
+<!-- CELEBRATION TOAST -->
+<div id="toastWrap" class="fixed bottom-6 right-1/2 translate-x-1/2 z-[90] flex flex-col items-center gap-2 pointer-events-none w-[92%] max-w-md"></div>
+<div id="bigCheer" class="fixed inset-0 z-[95] hidden items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+<div class="glass gold-border rounded-3xl p-8 text-center max-w-md w-full pop crown-shine">
+<div class="text-7xl trophy-float" id="bigCheerEmoji">🎉</div>
+<h2 id="bigCheerTitle" class="text-2xl font-black gold-text mt-3">أحسنتِ أبرار كمّلي يا بطلة! 🏆</h2>
+<p id="bigCheerSub" class="text-white/70 font-bold mt-2 text-sm leading-7"></p>
+<button onclick="closeCheer()" class="btn-gold rounded-xl px-8 py-3 mt-5 font-black">واصلي يا بطلة 🚀</button>
+</div>
+</div>
+
+<script>
+/* ================= DATA - 40 MCQ FROM RECURSION CHAPTER ================= */
+const QUESTIONS = [{"id": 1, "page": 2, "type": "mcq", "en": "In plain English, what is recursion?", "ar": "ما هي الـ recursion بلغة بسيطة؟", "opts": {"en": ["Running several different procedures one after another", "Repeating a single step a fixed number of times using a loop", "A process where one of the steps of a procedure involves rerunning the entire procedure", "Splitting a procedure into steps that run at the same time"], "ar": ["تشغيل عدة إجراءات مختلفة واحدًا تلو الآخر", "تكرار خطوة واحدة عددًا ثابتًا من المرات بحلقة", "عملية يتضمن فيها أحد خطوات الإجراء إعادة تشغيل الإجراء بأكمله", "تقسيم الإجراء إلى خطوات تعمل في وقت واحد"]}, "correct": 2, "ex": "التعريف في الشابتر: الـ <b>recursion</b> هي العملية التي يمر بها الإجراء عندما تتضمن إحدى خطواته <b>إعادة تشغيل الإجراء كاملًا</b>. مثال: إجراء من 4 خطوات تطلب خطوته الثالثة تشغيله من جديد، وهو وصف لحالة recursion. (صفحة 2)"}, {"id": 2, "page": 2, "type": "mcq", "en": "A procedure has 4 steps, and its 3rd step says to run the entire procedure again, with nothing to stop it. What happens?", "ar": "إجراء له 4 خطوات، وخطوته الثالثة تطلب تشغيل الإجراء كله من جديد دون أي شرط يوقفه. ماذا يحدث؟", "opts": {"en": ["Each time it reaches step 3 it starts anew, potentially forever", "It runs step 4 first and then stops", "It runs exactly twice and ends", "It skips step 3 automatically"], "ar": ["في كل مرة يصل للخطوة 3 يبدأ من جديد وقد يستمر بلا نهاية", "ينفذ الخطوة 4 أولًا ثم يتوقف", "ينفذ مرتين بالضبط ثم ينتهي", "يتخطى الخطوة 3 تلقائيًا"]}, "correct": 0, "ex": "كلما وصلنا للخطوة الثالثة نبدأ الإجراء من أوله، وهكذا <b>قد يستمر إلى ما لا نهاية</b>. لذلك نحتاج دائمًا إلى طريقة للتوقف. (صفحة 2)"}, {"id": 3, "page": 3, "type": "mcq", "en": "In the nested dolls strategy, what is the stopping (base) case?", "ar": "في استراتيجية الدمى المتداخلة، ما هي حالة التوقف (base case)؟", "opts": {"en": ["Open the outer doll", "Process the inner nest in the same way", "Open all dolls twice", "If there is only one doll, you're done and you play with it"], "ar": ["نفتح الدمية الخارجية", "نعالج العش الداخلي بالطريقة نفسها", "نفتح كل الدمى مرتين", "إذا بقيت دمية واحدة فقط ننتهي ونلعب بها"]}, "correct": 3, "ex": "<b>if there is only one doll → you're done! Play with the doll.</b> هذه هي حالة التوقف. أما فتح الدمية الخارجية فخطوة من الجزء else. (صفحة 3)"}, {"id": 4, "page": 3, "type": "mcq", "en": "In the nested dolls strategy, which step is 'the recursion'?", "ar": "في استراتيجية الدمى المتداخلة، أي خطوة هي «الـ recursion»؟", "opts": {"en": ["Open the outer doll", "Process the inner nest in the same way", "Play with the doll", "Check if there is only one doll"], "ar": ["فتح الدمية الخارجية", "معالجة العش الداخلي بالطريقة نفسها", "اللعب بالدمية", "التحقق هل بقيت دمية واحدة"]}, "correct": 1, "ex": "الخطوة (2) في else: <b>Process the inner nest in the same way</b>، لأننا نعيد تطبيق نفس الاستراتيجية على مجموعة أصغر من الدمى. وهذا ما سمّته الشريحة «This part is the recursion». (صفحة 3)"}, {"id": 5, "page": 4, "type": "mcq", "en": "From the programming perspective, what is a recursive method?", "ar": "من منظور البرمجة، ما هي الدالة العودية (recursive method)؟", "opts": {"en": ["A method that can only be called from main", "A method that contains a call to itself", "A method that calls two different methods in a loop", "A method that has no parameters"], "ar": ["دالة لا تُستدعى إلا من main", "دالة تحتوي استدعاءً لنفسها", "دالة تستدعي دالتين مختلفتين داخل حلقة", "دالة ليس لها معاملات"]}, "correct": 1, "ex": "الدالة العودية هي التي <b>تحتوي استدعاءً لنفسها</b>. كما يمكن استدعاء method B من method A، يمكن أيضًا استدعاء method A من داخل method A. (صفحة 4)"}, {"id": 6, "page": 4, "type": "mcq", "en": "Method A calls itself repeatedly. What must we make sure of?", "ar": "الدالة A تستدعي نفسها بشكل متكرر. ما الذي يجب التأكد منه؟", "opts": {"en": ["That method A has a return type of int", "That method B is called first", "That the method has no local variables", "That there is a way to exit the method"], "ar": ["أن نوع إرجاع A هو int", "أن يتم استدعاء الدالة B أولًا", "أن لا يكون في الدالة متغيرات محلية", "أن توجد طريقة للخروج من الدالة"]}, "correct": 3, "ex": "قد يستمر الاستدعاء إلى ما لا نهاية، لذلك <b>يجب أن تكون هناك طريقة للخروج</b> من الدالة (شرط توقف). (صفحة 4)"}, {"id": 7, "page": 5, "type": "mcq", "en": "What is wrong with the printExample method that prints a message and then calls printExample()?", "ar": "ما المشكلة في الدالة printExample التي تطبع رسالة ثم تستدعي printExample()؟", "opts": {"en": ["It has no terminating condition, so it just keeps going", "It cannot call itself in Java", "It prints the message only once", "It should be declared void instead of static"], "ar": ["ليس لها شرط توقف فتستمر بلا نهاية", "لا يمكنها استدعاء نفسها في Java", "تطبع الرسالة مرة واحدة فقط", "يجب تعريفها void بدل static"]}, "correct": 0, "ex": "المثال في الشابتر هو recursion <b>without a terminating condition</b>: تطبع الجملة ثم تستدعي نفسها دون أي شرط يوقفها، فتستمر «going and going». (صفحة 5)"}, {"id": 8, "page": 6, "type": "mcq", "en": "According to the chapter, recursion solves large problems by:", "ar": "حسب الشابتر، تحل الـ recursion المشكلات الكبيرة عن طريق:", "opts": {"en": ["Reducing them to smaller problems of the same form", "Converting them into loops of different problems", "Solving all parts at the same time", "Ignoring the smaller parts"], "ar": ["اختزالها إلى مشكلات أصغر من الشكل نفسه", "تحويلها إلى حلقات لمشكلات مختلفة", "حل كل الأجزاء في وقت واحد", "تجاهل الأجزاء الصغيرة"]}, "correct": 0, "ex": "الـ recursion تقسم المشكلة إلى نسخة أو أكثر <b>أبسط من المشكلة نفسها (smaller problems of the same form)</b>. (صفحة 6)"}, {"id": 9, "page": 6, "type": "mcq", "en": "What must a recursive method contain so that the recursion can terminate?", "ar": "ماذا يجب أن تحتوي الدالة العودية ليمكن إنهاء الـ recursion؟", "opts": {"en": ["A for loop around every call", "A second method with the same name", "Calls or conditional statements that can actually terminate the method", "A global variable counting the calls only"], "ar": ["حلقة for حول كل استدعاء", "دالة ثانية بنفس الاسم", "استدعاءات أو جمل شرطية يمكنها فعلًا إنهاء الدالة", "متغير عام يعد الاستدعاءات فقط"]}, "correct": 2, "ex": "يجب أن يكون في الدالة <b>جمل شرطية</b> (مثل if) تنهي الـ recursion عند حالة معينة. (صفحة 6)"}, {"id": 10, "page": 8, "type": "mcq", "en": "In the recursive countDown(int n) method, what is the stopping case?", "ar": "في الدالة العودية countDown(int n)، ما هي حالة التوقف؟", "opts": {"en": ["n == 10, which prints 10!", "n == 0, which prints BLAST OFF!", "n < 0, which prints nothing", "n == 1, which calls countDown(0)"], "ar": ["n == 10 فتطبع !10", "n == 0 فتطبع BLAST OFF!", "n < 0 ولا تطبع شيئًا", "n == 1 فتستدعي countDown(0)"]}, "correct": 1, "ex": "الكود: <b>if (n==0) println(BLAST OFF!)</b> else { println(n + \"!\"); countDown(n-1); }. أي أن الشرط n == 0 هو الذي ينهي الاستدعاءات. (صفحة 8)"}, {"id": 11, "page": 9, "type": "mcq", "en": "When countDown(10) runs, what does it do first?", "ar": "عند تشغيل countDown(10)، ماذا تفعل أولًا؟", "opts": {"en": ["It prints BLAST OFF! immediately", "It calls countDown(9) before printing anything", "It prints 10! and then calls countDown(9)", "It prints 9! and calls countDown(10)"], "ar": ["تطبع BLAST OFF! فورًا", "تستدعي countDown(9) قبل طباعة أي شيء", "تطبع 10! ثم تستدعي countDown(9)", "تطبع 9! وتستدعي countDown(10)"]}, "correct": 2, "ex": "لأن 10 أكبر من 0 تدخل الدالة الفرع else، فتطبع <b>10!</b> ثم <b>تستدعي نفسها بـ countDown(9)</b> (أي تبدأ «mini program» جديد). (صفحة 9)"}, {"id": 12, "page": 10, "type": "mcq", "en": "What happens when countDown(0) is called?", "ar": "ماذا يحدث عند استدعاء countDown(0)؟", "opts": {"en": ["It prints 0! and calls countDown(-1)", "It prints BLAST OFF! and finishes without any further call", "It throws an error because 0 is not positive", "It prints 1! and restarts the countdown"], "ar": ["تطبع 0! وتستدعي countDown(-1)", "تطبع BLAST OFF! وتنتهي دون استدعاء آخر", "تحدث مشكلة لأن 0 ليس موجبًا", "تطبع 1! وتبدأ العد من جديد"]}, "correct": 1, "ex": "الصفر ليس أكبر من 0 فلا تُنفذ الطباعة العادية، وتدخل في الفرع المنتهي فتطبع <b>BLAST OFF!</b> وتنتهي، ثم تنتهي كل الاستدعاءات السابقة ويعود التحكم إلى main. (صفحة 10)"}, {"id": 13, "page": 11, "type": "mcq", "en": "How many calls to countDown are made in total by countDown(10) (including the first one)?", "ar": "كم عدد استدعاءات countDown في المجموع عند تنفيذ countDown(10) (بما فيها الأول)؟", "opts": {"en": ["10", "11", "9", "12"], "ar": ["10", "11", "9", "12"]}, "correct": 1, "ex": "الاستدعاءات هي countDown(10) ثم 9 ثم 8 ... ثم 1 ثم 0، أي <b>11 استدعاءً</b>. الصورة في الشابتر تشبّهها بـ «method stack». (صفحة 11)"}, {"id": 14, "page": 12, "type": "mcq", "en": "By definition, what is 0! ?", "ar": "حسب التعريف، كم يساوي 0! ؟", "opts": {"en": ["1", "0", "-1", "Undefined"], "ar": ["1", "0", "-1", "غير معرّف"]}, "correct": 0, "ex": "الشابتر ينص على أن <b>0! = 1</b> (وعلّق: «just accept it!»). وهي أساس حالة التوقف في الحل العودي. (صفحة 12)"}, {"id": 15, "page": 14, "type": "mcq", "en": "According to the chapter, what is the hardest part of writing a recursive solution?", "ar": "حسب الشابتر، ما أصعب جزء في كتابة الحل العودي؟", "opts": {"en": ["Writing the main method", "Declaring the method as static", "Figuring out how to think of the problem recursively", "Printing the final answer"], "ar": ["كتابة دالة main", "تعريف الدالة static", "معرفة كيف نفكر في المشكلة بشكل عودي", "طباعة الإجابة النهائية"]}, "correct": 2, "ex": "الجزء الأصعب: أن تسأل نفسك <b>كيف يمكن إعادة كتابة المشكلة بحيث تُعرَّف عوديًا</b>، أي كمشكلة أصغر من النوع نفسه. (صفحة 14)"}, {"id": 16, "page": 15, "type": "mcq", "en": "Which expression correctly relates 10! to a smaller factorial?", "ar": "أي تعبير يربط 10! بمضروب أصغر بشكل صحيح؟", "opts": {"en": ["10! = 10 + 9!", "10! = 9! * 9!", "10! = 10 * 10!", "10! = 10 * 9!"], "ar": ["10! = 10 + 9!", "10! = 9! * 9!", "10! = 10 * 10!", "10! = 10 * 9!"]}, "correct": 3, "ex": "كل مضروب مرتبط بمضروب العدد الأصغر التالي: <b>10! = 10 * (9!)</b> لأن 9! = 9*8*...*1. وبالمثل 4! = 4 * 3!. (صفحة 15)"}, {"id": 17, "page": 16, "type": "mcq", "en": "Why do we need a stopping case in the definition n! = n * (n-1)! ?", "ar": "لماذا نحتاج حالة توقف في التعريف n! = n * (n-1)! ؟", "opts": {"en": ["Otherwise it would go on and on and on", "Because (n-1)! is always smaller than 0", "Because the multiplication would overflow", "Because factorial is not defined for positive numbers"], "ar": ["وإلا فسيستمر بلا نهاية", "لأن (n-1)! دائمًا أصغر من 0", "لأن الضرب سيتجاوز الحد", "لأن المضروب غير معرّف للأعداد الموجبة"]}, "correct": 0, "ex": "العلاقة n! = n*(n-1)! وحدها <b>ستستمر دون نهاية</b> (NOT good!)، فنضيف الحالة f(n) = 1 عندما n = 0. (صفحة 16)"}, {"id": 18, "page": 17, "type": "mcq", "en": "What does the recursive method factorial(10) return?", "ar": "ماذا تُرجع الدالة العودية factorial(10)؟", "opts": {"en": ["3628800", "362880", "100", "55"], "ar": ["3628800", "362880", "100", "55"]}, "correct": 0, "ex": "factorial(10) = 10*9*8*...*1 = <b>3628800</b>. أما 362880 فهي 9! ، والرقم 55 هو fib(10). والدالة تُرجع 1 عندما n == 0 وإلا n * factorial(n-1). (صفحة 17)"}, {"id": 19, "page": 18, "type": "mcq", "en": "In the trace of recursiveFactorial(4), what does recursiveFactorial(3) return to its caller?", "ar": "في تتبّع recursiveFactorial(4)، ماذا تُرجع recursiveFactorial(3) إلى من استدعاها؟", "opts": {"en": ["3", "6", "2", "24"], "ar": ["3", "6", "2", "24"]}, "correct": 1, "ex": "التسلسل: fact(0) ترجع 1، ثم fact(1) ترجع 1*1 = 1، ثم fact(2) ترجع 2*1 = 2، ثم <b>fact(3) ترجع 3*2 = 6</b>، وأخيرًا fact(4) ترجع 4*6 = 24. (صفحة 18)"}, {"id": 20, "page": 19, "type": "mcq", "en": "How many calls of fact are needed to compute 2! (fact(2), fact(1), ...)?", "ar": "كم استدعاءً للدالة fact يلزم لحساب 2! (fact(2) و fact(1) ...)؟", "opts": {"en": ["2", "4", "1", "3"], "ar": ["2", "4", "1", "3"]}, "correct": 3, "ex": "الاستدعاءات هي fact(2) ثم fact(1) ثم <b>fact(0)</b>، أي 3 استدعاءات (Recursion 1 و 2 و 3). عند fact(0) تُرجع الدالة 1 وتتجمع القيم عائدة إلى main. (صفحة 19)"}, {"id": 21, "page": 20, "type": "mcq", "en": "According to the chapter, what can a recursive method directly solve?", "ar": "حسب الشابتر، ماذا تستطيع الدالة العودية أن تحله مباشرة؟", "opts": {"en": ["Any problem of any size", "Only problems with loops", "Only the base case", "Only problems with two parameters"], "ar": ["أي مشكلة مهما كان حجمها", "المشكلات ذات الحلقات فقط", "حالة الأساس (base case) فقط", "المشكلات ذات معاملين فقط"]}, "correct": 2, "ex": "الدالة العودية <b>لا تستطيع حل إلا الـ base case</b>. أما إذا لم تكن الحالة أساسية فتقسّم المشكلة إلى مشكلة أصغر وأبسط وتشغّل نسخة جديدة من نفسها. (صفحة 20)"}, {"id": 22, "page": 20, "type": "mcq", "en": "After the base case is solved in a recursive method, what happens to the value?", "ar": "بعد حل حالة الأساس في الدالة العودية، ماذا يحدث للقيمة؟", "opts": {"en": ["It is discarded", "It works its way back up to solve the whole problem", "It is used to restart the method", "It is stored only in main"], "ar": ["تُهمل", "تصعد للأعلى تدريجيًا لحل المشكلة كاملة", "تُستخدم لإعادة تشغيل الدالة", "تُخزن في main فقط"]}, "correct": 1, "ex": "عند حل الـ base case <b>تصعد القيمة للأعلى</b> عبر الاستدعاءات السابقة حتى تُحل المشكلة الأصلية (كما في تتبع factorial). (صفحة 20)"}, {"id": 23, "page": 21, "type": "mcq", "en": "Which is a reason to use recursion according to the chapter?", "ar": "أي مما يلي سبب لاستخدام الـ recursion حسب الشابتر؟", "opts": {"en": ["It always uses less memory than loops", "It always runs faster than iteration", "Some solutions are naturally recursive, and the code can be shorter and clearer", "It is the only way to solve most problems"], "ar": ["تستخدم دائمًا ذاكرة أقل من الحلقات", "تعمل دائمًا أسرع من التكرار", "بعض الحلول عودية بطبيعتها وقد يكون الكود أقصر وأوضح", "هي الطريقة الوحيدة لحل أغلب المشكلات"]}, "correct": 2, "ex": "الأسباب: <b>حل أنيق لمشكلات معقدة</b>، وبعض الحلول عودية بطبيعتها، وأحيانًا كود أقل وأوضح للقراءة. أما السرعة والذاكرة فهي من عيوبها وليست مميزاتها. (صفحة 21)"}, {"id": 24, "page": 22, "type": "mcq", "en": "Which is a disadvantage of recursion mentioned in the chapter?", "ar": "أي مما يلي من عيوب الـ recursion المذكورة في الشابتر؟", "opts": {"en": ["It cannot solve problems that loops can solve", "It can only be used for numbers", "It does not allow return statements", "Recursive calls take up both memory and CPU time"], "ar": ["لا تستطيع حل مشكلات تحلها الحلقات", "تُستخدم مع الأرقام فقط", "لا تسمح بجمل return", "الاستدعاءات العودية تستهلك ذاكرة ووقت معالج"]}, "correct": 3, "ex": "الاستدعاءات العودية <b>تستهلك ذاكرة ووقت CPU</b>، وهناك مفاضلة بين الأداء العالي وهندسة البرمجيات الجيدة. (صفحة 22)"}, {"id": 25, "page": 22, "type": "mcq", "en": "Which statement about recursion and iteration is correct according to the chapter?", "ar": "أي عبارة عن العلاقة بين الـ recursion والـ iteration صحيحة حسب الشابتر؟", "opts": {"en": ["Every problem that can be solved recursively can be solved with iteration", "Some recursive problems can never be solved with loops", "Iteration cannot be used when recursion is possible", "Iteration always requires more code"], "ar": ["كل مشكلة تُحل عوديًا يمكن حلها بالتكرار (iteration)", "بعض المشكلات العودية لا يمكن حلها بالحلقات أبدًا", "لا يمكن استخدام التكرار إذا أمكن استخدام الـ recursion", "التكرار يحتاج دائمًا كودًا أكثر"]}, "correct": 0, "ex": "الشابتر ينص: <b>every problem that can be solved recursively can be solved with iteration</b>. لذلك الـ recursion اختيار للوضوح والأناقة وليست ضرورة. (صفحة 22)"}, {"id": 26, "page": 23, "type": "mcq", "en": "How is each term of the Fibonacci sequence (after the first two) defined?", "ar": "كيف يُعرَّف كل حد في متتالية فيبوناتشي (بعد الحدين الأولين)؟", "opts": {"en": ["As the product of the two previous terms", "As the previous term plus 1", "As twice the previous term", "As the sum of the two previous terms"], "ar": ["حاصل ضرب الحدين السابقين", "الحد السابق زائد 1", "ضعف الحد السابق", "بأنه مجموع الحدين السابقين"]}, "correct": 3, "ex": "المتتالية 1 1 2 3 5 8 13 ... كل حد بعد الأولين = مجموع الحدين السابقين، أي <b>fib(n) = fib(n-1) + fib(n-2)</b>، مثل fib(7) = fib(6) + fib(5) = 8 + 5 = 13. (صفحة 23)"}, {"id": 27, "page": 23, "type": "mcq", "en": "What are the base (stopping) cases of the Fibonacci definition in the chapter?", "ar": "ما حالتا الأساس (التوقف) في تعريف فيبوناتشي بالشابتر؟", "opts": {"en": ["fib(1) = 1 and fib(2) = 1", "fib(0) = 0 and fib(1) = 1", "fib(1) = 2 and fib(2) = 3", "fib(0) = 1 only"], "ar": ["fib(1) = 1 و fib(2) = 1", "fib(0) = 0 و fib(1) = 1", "fib(1) = 2 و fib(2) = 3", "fib(0) = 1 فقط"]}, "correct": 0, "ex": "في الشابتر أول حدين في المتتالية يساويان 1، لذلك <b>fib(1) = 1 و fib(2) = 1</b>. ويُترجم ذلك في الكود إلى if (n <= 2) return 1. (صفحتان 23 و 24)"}, {"id": 28, "page": 24, "type": "mcq", "en": "What does fib(10) return with the chapter's recursive method?", "ar": "ماذا تُرجع fib(10) بالدالة العودية في الشابتر؟", "opts": {"en": ["34", "89", "55", "10"], "ar": ["34", "89", "55", "10"]}, "correct": 2, "ex": "المتتالية: 1 1 2 3 5 8 13 21 34 <b>55</b> ... فالحد العاشر هو 55. (34 هو التاسع و 89 هو الحادي عشر). (صفحة 24)"}, {"id": 29, "page": 25, "type": "mcq", "en": "Why does the chapter call the recursive Fibonacci code 'beautiful'?", "ar": "لماذا يصف الشابتر كود فيبوناتشي العودي بأنه «جميل»؟", "opts": {"en": ["It is the fastest possible solution", "It never repeats any calculation", "It works for any input like 500 in seconds", "It is very clear, short, and follows directly from the definition"], "ar": ["لأنه أسرع حل ممكن", "لأنه لا يكرر أي حساب", "لأنه يعمل لأي مدخل مثل 500 خلال ثوانٍ", "لأنه واضح وقصير ويتبع التعريف مباشرة"]}, "correct": 3, "ex": "الكود جميل لأنه <b>واضح وقصير ومتفق مع التعريف الرياضي</b>. لكنه بطيء: مع 10 و 20 لا مشكلة، مع 50 يصبح بطيئًا، ومع 500 قد يستمر لأسابيع. (صفحة 25)"}, {"id": 30, "page": 26, "type": "mcq", "en": "In the call tree of fib(6), how many times is fib(1) called?", "ar": "في شجرة استدعاءات fib(6)، كم مرة يُستدعى fib(1)؟", "opts": {"en": ["1 time", "2 times", "3 times", "6 times"], "ar": ["مرة واحدة", "مرتان", "3 مرات", "6 مرات"]}, "correct": 2, "ex": "الشابتر يوضح أنه في هذا المثال الصغير <b>نستدعي fib(1) ثلاث مرات</b>، أي نعيد حساب القيمة نفسها عدة مرات، وكذلك fib(2). (صفحتان 26 و 27)"}, {"id": 31, "page": 27, "type": "mcq", "en": "Why is the recursive Fibonacci code so slow?", "ar": "لماذا كود فيبوناتشي العودي بطيء جدًا؟", "opts": {"en": ["Because recursion always makes code slow", "Because it uses too many variables", "Because the base cases are missing", "It recalculates the same values (like fib(1) and fib(2)) many times"], "ar": ["لأن الـ recursion تبطئ أي كود", "لأنه يستخدم متغيرات كثيرة", "لأن حالات الأساس مفقودة", "لأنه يعيد حساب القيم نفسها (مثل fib(1) و fib(2)) مرات كثيرة"]}, "correct": 3, "ex": "السبب: <b>redundant calculation</b>، أي حسابات مكررة وغير ضرورية، فقيمة fib(1) تُحسب مرارًا مع أنها تكفي مرة واحدة. وكلما كبر n زادت التكرارات (مثل fib(8)). والمشكلة في الخوارزمية وليست في الـ recursion نفسها. (صفحة 27)"}, {"id": 32, "page": 29, "type": "mcq", "en": "What was the point of the Fibonacci example?", "ar": "ما الهدف من مثال فيبوناتشي؟", "opts": {"en": ["Recursive solutions are often more elegant, although not necessarily faster", "Recursive solutions are always the fastest", "Fibonacci cannot be solved with loops", "Recursion should never be used"], "ar": ["الحلول العودية غالبًا أكثر أناقة وليست بالضرورة أسرع", "الحلول العودية هي الأسرع دائمًا", "فيبوناتشي لا يمكن حلها بالحلقات", "لا يجب استخدام الـ recursion أبدًا"]}, "correct": 0, "ex": "الهدف: إظهار أن البرمجة العودية قد تكون <b>أسهل وأكثر أناقة</b> وغالبًا اختيارًا واضحًا من التعريف، <b>دون أن تكون أسرع بالضرورة</b>. (صفحة 29)"}, {"id": 33, "page": 31, "type": "mcq", "en": "In the factorial example, why is (n-1)! suitable for a recursive call?", "ar": "في مثال المضروب، لماذا يصلح (n-1)! ليكون استدعاءً عوديًا؟", "opts": {"en": ["Because it is always equal to n", "Because it does not need a stopping case", "Because it is an easier, smaller version of the original problem n!", "Because it removes the need for multiplication"], "ar": ["لأنه يساوي n دائمًا", "لأنه لا يحتاج حالة توقف", "لأنه نسخة أصغر وأسهل من المشكلة الأصلية n!", "لأنه يلغي الحاجة للضرب"]}, "correct": 2, "ex": "نقسم المشكلة إلى أجزاء بحيث يكون أحدها <b>نسخة أصغر من المشكلة نفسها</b>. و 9! أسهل قليلًا من 10! . (صفحة 31)"}, {"id": 34, "page": 33, "type": "mcq", "en": "Which programming construct chooses between 'break the problem down further' and 'solve it directly'?", "ar": "أي تركيب برمجي يختار بين «تقسيم المشكلة أكثر» و«حلها مباشرة»؟", "opts": {"en": ["A for loop", "An if statement", "A switch on the data type", "A static variable"], "ar": ["حلقة for", "جملة if", "switch على نوع البيانات", "متغير static"]}, "correct": 1, "ex": "عندما يكون لدينا خياران في البرمجة نستخدم <b>if statement</b>. وهكذا تتكون البنيتان العامتان للدوال العودية. (صفحة 33)"}, {"id": 35, "page": 34, "type": "mcq", "en": "Which methods use Construct 1: if (terminating condition) { DO FINAL ACTION } else { step closer; call recursively }?", "ar": "أي الدوال تستخدم البنية Construct 1: if (terminating condition) { DO FINAL ACTION } else { ... }؟", "opts": {"en": ["Methods that return values", "Only void methods", "Only main methods", "Methods without any conditions"], "ar": ["الدوال التي تُرجع قيمًا", "دوال void فقط", "دوال main فقط", "دوال بدون أي شروط"]}, "correct": 0, "ex": "الشابتر يقول: <b>methods that return values take on this construct</b>. مثل factorial و sumNumbers و Power، فيها return للحالة النهائية وreturn لتعبير فيه استدعاء عودي. (صفحة 34)"}, {"id": 36, "page": 35, "type": "mcq", "en": "Which methods use Construct 2: if (!(terminating condition)) { step closer; call recursively }?", "ar": "أي الدوال تستخدم البنية Construct 2: if (!(terminating condition)) { ... }؟", "opts": {"en": ["Methods that return an int", "Methods that never call themselves", "Only methods with two parameters", "void recursive methods"], "ar": ["الدوال التي تُرجع int", "الدوال التي لا تستدعي نفسها أبدًا", "الدوال ذات معاملين فقط", "الدوال العودية من نوع void"]}, "correct": 3, "ex": "<b>void recursive methods use this construct</b>: لا يوجد return للقيمة، فنكتفي بتنفيذ الخطوة والاستدعاء العودي ما دام شرط التوقف غير متحقق. مثال: printCharsReverse. (صفحة 35)"}, {"id": 37, "page": 39, "type": "mcq", "en": "Why is f(n) = 1 + (2 + 3 + ... + n) NOT a good recursive definition of the sum 1 + 2 + ... + n?", "ar": "لماذا لا يُعد f(n) = 1 + (2 + 3 + ... + n) تعريفًا عوديًا جيدًا لمجموع 1 + 2 + ... + n؟", "opts": {"en": ["Because it has no addition", "Because it adds the number 1 twice", "Because it needs a loop", "Because 2 + 3 + ... + n is not a sub-problem of the same form as 1 + 2 + ... + n"], "ar": ["لأنه لا يحتوي جمعًا", "لأنه يجمع الرقم 1 مرتين", "لأنه يحتاج حلقة", "لأن 2 + 3 + ... + n ليست مشكلة فرعية من نفس شكل 1 + 2 + ... + n"]}, "correct": 3, "ex": "المطلوب مشكلة فرعية <b>من الشكل نفسه تمامًا</b>. المجموع 2+3+...+n لا يبدأ من 1 فلا يشبه الأصل. أما <b>n + (1+2+...+(n-1))</b> فهي مشكلة فرعية من نفس الشكل، أي f(n) = n + f(n-1). (صفحة 39)"}, {"id": 38, "page": 43, "type": "mcq", "en": "What does sumNumbers(3) return, using: if (n == 0) return 0; else return n + sumNumbers(n-1);?", "ar": "ماذا تُرجع sumNumbers(3) بالكود: if (n == 0) return 0; else return n + sumNumbers(n-1);؟", "opts": {"en": ["3", "6", "5", "0"], "ar": ["3", "6", "5", "0"]}, "correct": 1, "ex": "sumNumbers(3) = 3 + sumNumbers(2) = 3 + (2 + sumNumbers(1)) = 3 + 2 + (1 + sumNumbers(0)) = 3 + 2 + 1 + 0 = <b>6</b>. (صفحة 43)"}, {"id": 39, "page": 47, "type": "mcq", "en": "In the recursive Power(base, exponent) method, what is the terminating condition and how is Power(2, 4) reduced?", "ar": "في الدالة العودية Power(base, exponent)، ما شرط التوقف وكيف يُختزل Power(2, 4)؟", "opts": {"en": ["exponent == 1 returns 0; Power(2,4) = 4 * Power(2,2)", "exponent == 0 returns 1; Power(2,4) = 2 * Power(2,3)", "exponent == 0 returns 0; Power(2,4) = 2 + Power(2,3)", "base == 0 returns 1; Power(2,4) = Power(1,4) * 2"], "ar": ["exponent == 1 تُرجع 0؛ و Power(2,4) = 4 * Power(2,2)", "exponent == 0 تُرجع 1؛ و Power(2,4) = 2 * Power(2,3)", "exponent == 0 تُرجع 0؛ و Power(2,4) = 2 + Power(2,3)", "base == 0 تُرجع 1؛ و Power(2,4) = Power(1,4) * 2"]}, "correct": 1, "ex": "لأن b⁰ = 1 فشرط التوقف <b>e = 0</b> وتُرجع 1. وللباقي f(b,e) = b * b^(e-1)، أي 2⁴ = 2 * 2³، وهي مشكلة أصغر من الشكل نفسه. النتيجة 16. (صفحتان 45 و 48)"}, {"id": 40, "page": 51, "type": "mcq", "en": "What does printCharsReverse(\"abc\") print, given: if (!(str == null || str.length() < 1)) { printCharsReverse(str.substring(1)); System.out.print(str.charAt(0)); }?", "ar": "ماذا تطبع printCharsReverse(\"abc\") بالكود: if (!(str == null || str.length() < 1)) { printCharsReverse(str.substring(1)); System.out.print(str.charAt(0)); }؟", "opts": {"en": ["abc", "bca", "cba", "acb"], "ar": ["abc", "bca", "cba", "acb"]}, "correct": 2, "ex": "الاستدعاء العودي يأتي <b>قبل</b> الطباعة، فيصل إلى آخر حرف أولًا: \"abc\" تستدعي \"bc\" ثم \"c\" ثم \"\" (تتوقف)، وبعدها تطبع الاستدعاءات عند العودة: <b>c ثم b ثم a</b>. ولو وضعنا الطباعة قبل الاستدعاء لظهر abc. (صفحة 51)"}];
+const N=QUESTIONS.length;
+
+
+const successPhrases = ["أحسنتِ أبرار كمّلي يا بطلة! 🏆","ممتاز يا أبرار! أنتِ نجمة البرمجة 🌟","برافو أبرار! استمري على هذا التألق 🚀","عاشت يا وحشة! إجابة ملكية 👑","أسطورية يا أبرار! الكويز لكِ بإذن الله 💎","ما شاء الله عليكِ! عقلك برمجي ذهبي ✨"];
+const failPhrases = ["حاولي مرة أخرى يا أبرار، أنتِ تقدرين! 💪","لا بأس يا بطلة، ركّزي وحاولي مجددًا 🔄","قريب جدًا! المحاولة القادمة لكِ يا أبرار 🎯","الفشل أول خطوة للنجاح، حاولي مرة أخرى ❤️‍🔥"];
+let qi=0;
+let state = QUESTIONS.map(()=>({chosen:null,first:null,attempts:0,done:false,skipped:false,firstCorrect:null}));
+let translated = new Set();
+let translateAll=false;
+let bookmarked=new Set();
+let mode='train';
+let soundOn=true;
+let xp=0, streak=0, bestStreak=0, correctFirst=0;
+let seconds=0, timerInt=null, started=false;
+let filter='all', showOnlyWrong=false;
+let audioCtx=null;
+let charts=[];
+
+/* AUDIO */
+function ctx(){ if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)(); if(audioCtx.state==='suspended') audioCtx.resume(); return audioCtx; }
+function tone(f,t,d,type='sine',v=.22,when=0){ if(!soundOn) return; try{ const c=ctx(),o=c.createOscillator(),g=c.createGain(); o.type=type;o.frequency.value=f; const s=c.currentTime+when; g.gain.setValueAtTime(0.0001,s); g.gain.exponentialRampToValueAtTime(v,s+.02); g.gain.exponentialRampToValueAtTime(0.0001,s+d); o.connect(g);g.connect(c.destination);o.start(s);o.stop(s+d+.05);}catch(e){} }
+function playClick(){ tone(600,0,.12,'sine',.12); }
+function playSuccess(){ if(!soundOn) return; [523,659,784,1046,1318].forEach((f,i)=>tone(f,0,.35,'triangle',.22,i*.09)); tone(2093,0,.5,'sine',.12,.5); setTimeout(()=>{ [1046,1318,1568].forEach((f,i)=>tone(f,0,.3,'sine',.15,i*.07)); },450); }
+function playFail(){ if(!soundOn) return; tone(220,0,.3,'sawtooth',.12); tone(174,0,.4,'sawtooth',.12,.15); }
+function playFinish(){ if(!soundOn) return; [523,523,523,659,784,1046,784,1046,1318,1568,2093].forEach((f,i)=>tone(f,0,.35,'triangle',.2,i*.13)); }
+function toggleSound(){ soundOn=!soundOn; document.getElementById('soundBtn').textContent=soundOn?'🔊':'🔇'; if(soundOn) playClick(); toast(soundOn?'🔊 تم تفعيل الأصوات التحفيزية':'🔇 تم كتم الصوت'); }
+
+/* HELPERS */
+function scrollToQuiz(){ document.getElementById('quizSection').scrollIntoView({behavior:'smooth'}); if(!started) startTimer(); playClick(); }
+function setMode(m){ mode=m; playClick(); const t=document.getElementById('modeTrain'),e=document.getElementById('modeExam'); if(m==='train'){ t.classList.add('border-[#D4AF37]'); t.classList.remove('border-transparent'); e.classList.remove('border-[#D4AF37]'); e.classList.add('border-transparent'); t.querySelector('div:last-child').textContent='● مُفعّل الآن'; t.querySelector('div:last-child').className='text-[11px] mt-2 font-black text-green-400'; document.getElementById('examLabel').textContent='○ اضغطي للتفعيل'; document.getElementById('examLabel').className='text-[11px] mt-2 font-black text-white/40'; toast('🎓 وضع التدريب: يمكنكِ المحاولة مجددًا للتعلم'); } else { e.classList.add('border-[#D4AF37]'); e.classList.remove('border-transparent'); t.classList.remove('border-[#D4AF37]'); t.classList.add('border-transparent'); document.getElementById('examLabel').textContent='● مُفعّل الآن'; document.getElementById('examLabel').className='text-[11px] mt-2 font-black text-green-400'; toast('⏱️ وضع الكويز الحقيقي: محاولة واحدة فقط يا بطلة!'); } }
+function startTimer(){ if(started) return; started=true; timerInt=setInterval(()=>{ seconds++; const m=String(Math.floor(seconds/60)).padStart(2,'0'),s=String(seconds%60).padStart(2,'0'); document.getElementById('timerHero').textContent=`${m}:${s}`; },1000); }
+function fmt(s){ return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; }
+function toast(msg){ const w=document.getElementById('toastWrap'); const d=document.createElement('div'); d.className='toast pointer-events-auto glass gold-border rounded-2xl px-5 py-3 font-bold text-sm text-center shadow-2xl'; d.innerHTML=msg; w.appendChild(d); setTimeout(()=>{ d.style.opacity='0'; d.style.transform='translateY(10px)'; setTimeout(()=>d.remove(),400); },2600); }
+function goldConfettiBig(){ const end=Date.now()+1200; (function f(){ confetti({particleCount:6,angle:60,spread:60,origin:{x:0},colors:['#D4AF37','#F5D67B','#FFF6C8','#fff']}); confetti({particleCount:6,angle:120,spread:60,origin:{x:1},colors:['#D4AF37','#F5D67B','#FFF6C8','#fff']}); if(Date.now()<end) requestAnimationFrame(f); })(); confetti({particleCount:120,spread:100,origin:{y:.6},colors:['#D4AF37','#F5D67B','#ffffff','#22c55e']}); }
+function smallConfetti(){ confetti({particleCount:45,spread:70,origin:{y:.7},colors:['#D4AF37','#F5D67B','#fff','#22c55e']}); }
+
+/* RENDER */
+function renderQuestion(){
+const q=QUESTIONS[qi], st=state[qi];
+document.getElementById('qCounter').textContent=`السؤال ${qi+1} / ${N}`;
+document.getElementById('heroQpos').textContent=qi+1;
+document.getElementById('qPageBadge').textContent=`📄 صفحة ${q.page}`;
+document.getElementById('qTypeBadge').textContent=q.type==='tf'?'صح / خطأ • True / False':'اختياري • Multiple Choice';
+document.getElementById('qEn').innerHTML=`<span class="text-[#F5D67B] font-black">Q${q.id}.</span> ${q.en}`;
+const showTr = translateAll || translated.has(qi);
+document.getElementById('qArBox').classList.toggle('hidden',!showTr);
+document.getElementById('qAr').textContent=q.ar;
+document.getElementById('trBtn').textContent=showTr?'🙈 إخفاء الترجمة':'🌐 ترجم';
+document.getElementById('trBtn').className=showTr?'rounded-xl px-4 py-2.5 font-black text-sm bg-white/15 border border-[#D4AF37]':'rounded-xl px-4 py-2.5 font-black text-sm btn-gold';
+document.getElementById('bmBtn').textContent=bookmarked.has(qi)?'⭐':'🤍';
+const ab=document.getElementById('attemptBadge');
+if(st.attempts>0 && !st.done){ ab.classList.remove('hidden'); ab.textContent=`🔄 المحاولة ${st.attempts+1}`; } else ab.classList.add('hidden');
+const grid=document.getElementById('optsGrid'); grid.innerHTML='';
+const letters=q.type==='tf'?['✓','✕']:['A','B','C','D'];
+q.opts.en.forEach((oe,i)=>{
+const b=document.createElement('button'); b.className='opt'; b.id=`opt${i}`;
+const isCorrectOpt = st.done && i===q.correct;
+const isWrongChosen = st.done && st.first!==null && st.chosen===i && i!==q.correct && mode==='exam';
+const isDisabledWrong = mode==='train' && st.wrongTried && st.wrongTried.includes(i);
+if(isCorrectOpt) b.classList.add('correct');
+if(isWrongChosen) b.classList.add('wrong');
+if(isDisabledWrong){ b.classList.add('dim'); b.disabled=true; }
+if(st.done && mode==='exam') b.disabled=true;
+if(st.done && mode==='train' && st.finalDone) b.disabled=true;
+b.innerHTML=`<span class="opt-letter">${letters[i]}</span><span class="flex-1"><span dir="ltr" class="block text-left font-pop font-semibold leading-7">${oe}</span><span class="block mt-1 text-[13px] font-bold ${showTr?'':'hidden'} text-[#F5D67B] opt-ar-trans">${q.opts.ar[i]}</span></span><span class="text-xl result-ico">${isCorrectOpt?'✅':(isWrongChosen?'❌':'')}</span>`;
+b.onclick=()=>answer(i);
+grid.appendChild(b);
+});
+// feedback
+const fb=document.getElementById('feedbackBox'), ex=document.getElementById('explainBox');
+fb.classList.add('hidden'); ex.classList.add('hidden');
+if(st.done){
+if(st.firstCorrect){ fb.classList.remove('hidden'); fb.className='mt-5 rounded-2xl p-5 text-center font-black text-lg pop feedback-ok'; fb.innerHTML=`🎉 ${st.successMsg||'أحسنتِ أبرار كمّلي يا بطلة! 🏆'}<div class="text-xs font-bold text-green-200 mt-1">إجابة صحيحة من ${st.attempts===0?'أول محاولة':'المحاولة '+(st.attempts+1)} • +${st.attempts===0?10:5} XP</div>`; }
+else if(mode==='exam'){ fb.classList.remove('hidden'); fb.className='mt-5 rounded-2xl p-5 text-center font-black text-lg pop feedback-bad'; fb.innerHTML=`💪 حاولي مرة أخرى يا أبرار في السؤال القادم!<div class="text-sm mt-1">الإجابة الصحيحة: <b class="text-green-300">${q.opts.en[q.correct]}</b> • <b class="text-[#F5D67B]">${q.opts.ar[q.correct]}</b></div>`; }
+showExplain();
+if(st.finalDone && !st.firstCorrect){ fb.classList.remove('hidden'); fb.className='mt-5 rounded-2xl p-5 text-center font-black text-lg pop feedback-ok'; fb.innerHTML=`👏 أحسنتِ أبرار! وصلتِ للصح بعد التعلم 💡<div class="text-xs mt-1 text-white/70">أول إجابة كانت خاطئة (محسوبة للمراجعة) لكن إصرارك بطولي — أكملي!</div>`; }
+} else if(st.attempts>0){
+fb.classList.remove('hidden'); fb.className='mt-5 rounded-2xl p-5 text-center font-black text-lg pop feedback-bad'; fb.innerHTML=`${failPhrases[st.attempts%failPhrases.length]}<div class="text-sm text-white/70 mt-1">اختاري إجابة أخرى يا بطلة — أنتِ تقدرين! 🔥</div>`;
+}
+updateProgress(); renderPalette();
+document.getElementById('qCard').classList.remove('shake');
+}
+function showExplain(){ const q=QUESTIONS[qi]; const ex=document.getElementById('explainBox'); ex.classList.remove('hidden'); ex.innerHTML=`<b class="text-[#F5D67B]">💡 الشرح الذهبي:</b> ${q.ex}<div class="mt-1 text-xs text-white/60">النموذجية: <b dir="ltr" class="text-green-300">${q.opts.en[q.correct]}</b> — <b class="text-[#F5D67B]">${q.opts.ar[q.correct]}</b></div>`; }
+
+function answer(i){
+startTimer(); playClick();
+const q=QUESTIONS[qi], st=state[qi];
+if(st.done && (mode==='exam' || st.finalDone)) return;
+if(st.wrongTried && st.wrongTried.includes(i)) return;
+if(st.first===null){ st.first=i; st.attempts=0; }
+else { st.attempts++; }
+if(i===q.correct){
+// correct
+if(st.first===i){ st.firstCorrect=true; correctFirst++; streak++; bestStreak=Math.max(bestStreak,streak); xp+=10; st.successMsg=successPhrases[Math.floor(Math.random()*successPhrases.length)]; }
+else { st.firstCorrect=false; streak=0; xp+=5; if(!st.successMsg) st.successMsg=successPhrases[Math.floor(Math.random()*successPhrases.length)]; }
+st.chosen=i; st.done=true; st.finalDone=true;
+playSuccess(); smallConfetti();
+if(streak>0 && streak%5===0){ goldConfettiBig(); showCheer(`🔥 سلسلة نارية ${streak} إجابات!`,`واصلي يا أبرار! أنتِ تقتربين من العلامة الكاملة بسرعة الصاروخ 🚀`); }
+else if(st.first===i && Math.random()<.28){ goldConfettiBig(); }
+toast(`✅ <span class="gold-text">أحسنتِ أبرار كمّلي يا بطلة!</span> 🏆`);
+document.getElementById('qCard').classList.add('pop');
+} else {
+// wrong
+playFail();
+document.getElementById('qCard').classList.remove('shake'); void document.getElementById('qCard').offsetWidth; document.getElementById('qCard').classList.add('shake');
+if(mode==='exam'){ st.chosen=i; st.firstCorrect=false; st.done=true; st.finalDone=true; streak=0; toast(`❌ <b>حاولي مرة أخرى</b> يا أبرار في القادم! 💪`); }
+else {
+if(!st.wrongTried) st.wrongTried=[];
+st.wrongTried.push(i);
+if(st.first!==i || true){ if(st.wrongTried.length>= 2 && q.type!=='tf' && st.wrongTried.length>=3){ st.chosen=q.correct; st.done=true; st.finalDone=true; st.firstCorrect=false; streak=0; } }
+toast(`❌ <b>حاولي مرة أخرى</b> يا أبرار! 🔄`);
+if(q.type==='tf'){ /* second try will be correct */ }
+}
+}
+updateHUD(); renderQuestion();
+if(state[qi].done){ setTimeout(()=>{ if(qi<N-1 && document.getElementById('reportSection').classList.contains('hidden')){ /* stay, let user click next */ } },600); }
+}
+function nextQ(){ playClick(); if(qi<N-1){ qi++; renderQuestion(); document.getElementById('quizSection').scrollIntoView({behavior:'smooth',block:'start'}); } else toast('🏁 هذا آخر سؤال — اضغطي إنهاء لعرض تقريرك الملكي'); }
+function prevQ(){ playClick(); if(qi>0){ qi--; renderQuestion(); } }
+function skipQ(){ playClick(); state[qi].skipped=true; toast('⏭️ تم تخطي السؤال — يمكنك العودة له من الخريطة'); if(qi<N-1){ qi++; renderQuestion(); } updateProgress(); renderPalette(); }
+function toggleTranslateCurrent(){ playClick(); if(translated.has(qi)) translated.delete(qi); else translated.add(qi); renderQuestion(); }
+function translateAllToggle(){ playClick(); translateAll=!translateAll; toast(translateAll?'🌐 تم تفعيل الترجمة العربية لجميع الأسئلة بجانب الإنجليزية':'🌐 تم إخفاء الترجمات'); renderQuestion(); }
+function toggleBookmark(){ playClick(); if(bookmarked.has(qi)) bookmarked.delete(qi); else { bookmarked.add(qi); toast('⭐ تمت الإضافة للمفضلة'); } renderQuestion(); renderPalette(); }
+function reviewBookmarks(){ playClick(); if(bookmarked.size===0){ toast('⭐ لا توجد أسئلة مفضلة بعد — اضغطي 🤍 لحفظ سؤال'); return; } filter='bm'; renderPalette(); document.getElementById('paletteCard').scrollIntoView({behavior:'smooth'}); }
+function setFilter(f){ playClick(); filter=f; document.querySelectorAll('.filter-btn').forEach(b=>{ if(b.dataset.f===f){ b.className='filter-btn px-3 py-1.5 rounded-lg bg-[#D4AF37] text-black'; } else { b.className='filter-btn px-3 py-1.5 rounded-lg bg-white/10'; } }); renderPalette(); }
+function updateHUD(){ document.getElementById('hdrScore').textContent=xp; document.getElementById('statCorrect').textContent=correctFirst; const wrongFirst=state.filter(s=>s.firstCorrect===false).length; document.getElementById('statWrong').textContent=wrongFirst; document.getElementById('statStreak').textContent=streak+' 🔥'; document.getElementById('xpNum').textContent=xp; const lvl=Math.floor(xp/100)+1; document.getElementById('levelNum').textContent=lvl; document.getElementById('xpBar').style.width=((xp%100))+'%'; }
+function updateProgress(){ const answered=state.filter(s=>s.done).length; const pct=Math.round(answered/N*100); document.getElementById('quizProgress').style.width=Math.max(2,pct)+'%'; document.getElementById('topProgress').style.width=pct+'%'; }
+function renderPalette(){ const p=document.getElementById('palette'); p.innerHTML=''; QUESTIONS.forEach((q,idx)=>{ const st=state[idx]; let show=true; if(filter==='ok' && !(st.done&&st.firstCorrect)) show=false; if(filter==='bad' && !(st.done&&st.firstCorrect===false)) show=false; if(filter==='un' && st.done) show=false; if(filter==='bm' && !bookmarked.has(idx)) show=false; if(!show) return; const b=document.createElement('button'); b.textContent=idx+1; b.className='pal-btn'+(idx===qi?' current':'')+((st.done&&st.firstCorrect)?' ok':(st.done&&st.firstCorrect===false)?' bad':(st.skipped&&!st.done)?' skip':''); if(bookmarked.has(idx)) b.textContent+='•'; b.title=`Q${idx+1} - صفحة ${q.page}`; b.onclick=()=>{ playClick(); qi=idx; renderQuestion(); }; p.appendChild(b); }); }
+
+/* CHEER */
+function showCheer(t,s){ document.getElementById('bigCheerTitle').textContent=t; document.getElementById('bigCheerSub').textContent=s; const o=document.getElementById('bigCheer'); o.classList.remove('hidden'); o.classList.add('flex'); }
+function closeCheer(){ const o=document.getElementById('bigCheer'); o.classList.add('hidden'); o.classList.remove('flex'); playClick(); }
+
+/* FINISH & REPORT */
+function confirmFinish(){ playClick(); const un=state.filter(s=>!s.done).length; if(un>0){ if(!confirm(`يا أبرار، لديكِ ${un} سؤالًا غير مجاب. هل تريدين إنهاء الاختبار وعرض النتيجة الآن؟`)) return; } finish(); }
+function finish(){ clearInterval(timerInt); playFinish(); goldConfettiBig(); setTimeout(goldConfettiBig,800);
+const correct=state.filter(s=>s.firstCorrect===true).length;
+const wrong=state.filter(s=>s.firstCorrect===false).length;
+const skipped=state.filter(s=>!s.done).length;
+const pct=Math.round(correct/N*100);
+document.getElementById('reportSection').classList.remove('hidden');
+document.getElementById('rCorrect').textContent=correct;
+document.getElementById('rWrong').textContent=wrong;
+document.getElementById('rTime').textContent=fmt(seconds);
+document.getElementById('rStreak').textContent=bestStreak+' 🔥';
+document.getElementById('finalPct').textContent=pct+'%';
+document.getElementById('reportSubtitle').textContent=`أكملت ${N} سؤالًا في ${fmt(seconds)} • صح من أول مرة: ${correct} • تحتاج مراجعة: ${wrong} • متخطّى: ${skipped}`;
+let grade,msg;
+if(pct>=90){ grade='🏆 ممتاز مع مرتبة الشرف'; msg=`أسطورية يا أبرار! ${correct}/${N} من أول مرة — أحسنتِ كمّلي يا بطلة! أنتِ جاهزة للكويز بنسبة 100% 👑🔥`; }
+else if(pct>=80){ grade='🌟 ممتاز'; msg=`رائع يا أبرار! ${correct}/${N} — أحسنتِ كمّلي يا بطلة! مراجعة سريعة للأخطاء وستكون علامتك كاملة 💎`; }
+else if(pct>=70){ grade='👏 جيد جدًا'; msg=`أداء بطولي يا أبرار! ${correct}/${N} — استمري! راجعي الأسئلة الخاطئة بالأسفل وستتفوقين 🚀`; }
+else if(pct>=60){ grade='💪 جيد'; msg=`بداية قوية يا أبرار! ${correct}/${N} — حاولي مرة أخرى وستتحسنين كثيرًا! راجعي الشرح لكل سؤال 📚`; }
+else { grade='📚 تحتاج تدريبًا'; msg=`لا تستسلمي يا بطلة! ${correct}/${N} — كل عظيم بدأ من هنا. راجعي الأخطاء ثم أعيدي الاختبار وستبهرين الجميع ❤️‍🔥`; }
+document.getElementById('gradeBadge').textContent=grade;
+const fm=document.getElementById('finalMessage'); fm.textContent=msg;
+const circ=document.getElementById('scoreCircle'); const off=326.7-(326.7*pct/100); setTimeout(()=>circ.style.strokeDashoffset=off,300);
+let best=parseInt(localStorage.getItem('abrar_best_recursion')||'0'); if(pct>best){ localStorage.setItem('abrar_best_recursion',pct); best=pct; toast('🎉 رقم قياسي جديد! best: '+pct+'%'); }
+document.getElementById('bestScoreHero').textContent=best+'%';
+showCheer(pct>=60?'أحسنتِ أبرار كمّلي يا بطلة! 🏆':'حاولي مرة أخرى يا بطلة! 💪', msg);
+renderReportList(); drawCharts(correct,wrong,skipped);
+document.getElementById('reportSection').scrollIntoView({behavior:'smooth'});
+}
+function toggleWrongBtn(btn){ document.querySelectorAll('#reportSection .no-print button').forEach(b=>b.classList.replace('btn-gold','btn-ghost')); }
+function renderReportList(){
+const wrap=document.getElementById('reportList'); wrap.innerHTML='';
+QUESTIONS.forEach((q,idx)=>{
+const st=state[idx];
+const isOk=st.firstCorrect===true, isBad=st.firstCorrect===false, isSkip=!st.done;
+if(showOnlyWrong && !isBad) return;
+const userTxt = st.first===null?'— لم يُجب —':`${q.opts.en[st.first]} — ${q.opts.ar[st.first]}`;
+const modelTxt=`${q.opts.en[q.correct]} — ${q.opts.ar[q.correct]}`;
+const card=document.createElement('div');
+card.className=`glass rounded-2xl p-5 border-r-8 ${isOk?'!border-green-500':isBad?'!border-red-500':'!border-yellow-500'}`;
+card.innerHTML=`
+<div class="flex flex-wrap items-center justify-between gap-2">
+<div class="flex items-center gap-2 flex-wrap">
+<span class="font-black btn-gold rounded-lg px-3 py-1 text-sm">Q${q.id}</span>
+<span class="text-xs font-bold bg-white/10 rounded-lg px-3 py-1">📄 صفحة ${q.page}</span>
+<span class="text-xs font-bold rounded-lg px-3 py-1 ${q.type==='tf'?'bg-purple-500/20 text-purple-200':'bg-blue-500/20 text-blue-200'}">${q.type==='tf'?'صح / خطأ':'اختياري'}</span>
+${bookmarked.has(idx)?'<span class="text-xs">⭐</span>':''}
+</div>
+<span class="font-black text-sm px-4 py-1.5 rounded-full ${isOk?'bg-green-500/20 text-green-300 border border-green-500':isBad?'bg-red-500/20 text-red-300 border border-red-500':'bg-yellow-500/20 text-yellow-200 border border-yellow-500'}">${isOk?'✅ صح':'❌ خطأ / مراجعة'}</span>
+</div>
+<div dir="ltr" class="text-left font-pop font-semibold mt-3 leading-7 text-[15px]">${q.en}</div>
+<div class="ar-box p-3 mt-2 text-sm font-bold leading-7">🇸🇦 ${q.ar}</div>
+<div class="grid md:grid-cols-2 gap-3 mt-3 text-sm">
+<div class="rounded-xl p-3 border ${isOk?'bg-green-500/10 border-green-500/40':'bg-red-500/10 border-red-500/40'}"><div class="text-xs font-black opacity-70">إجابة أبرار (أول محاولة):</div><div class="font-bold mt-1" dir="ltr">${st.first===null?'—':q.opts.en[st.first]}</div><div class="font-bold text-[#F5D67B]">${st.first===null?'لم يُجب':q.opts.ar[st.first]}</div></div>
+<div class="rounded-xl p-3 bg-green-500/10 border border-green-500/40"><div class="text-xs font-black text-green-300">✅ الإجابة النموذجية:</div><div class="font-bold mt-1" dir="ltr">${q.opts.en[q.correct]}</div><div class="font-bold text-[#F5D67B]">${q.opts.ar[q.correct]}</div></div>
+</div>
+<div class="mt-2 text-xs leading-6 bg-black/30 rounded-xl p-3 border border-white/10">💡 <b>الشرح:</b> ${q.ex} ${st.attempts>0?`• عدد المحاولات: ${st.attempts+1}`:''}</div>
+<div class="flex gap-2 mt-3 no-print">
+<button onclick="goToQ(${idx})" class="btn-ghost rounded-lg px-4 py-2 text-xs font-bold">🔁 العودة للسؤال</button>
+<button onclick="toggleBmReport(${idx},this)" class="btn-ghost rounded-lg px-4 py-2 text-xs font-bold">${bookmarked.has(idx)?'⭐ مفضلة':'🤍 حفظ'}</button>
+</div>`;
+wrap.appendChild(card);
+});
+if(wrap.children.length===0){ wrap.innerHTML=`<div class="glass rounded-2xl p-10 text-center font-black text-green-300 text-xl">🎉 لا توجد أخطاء يا بطلة! كل إجاباتك صحيحة — أحسنتِ أبرار! 👑</div>`; }
+}
+function goToQ(i){ qi=i; renderQuestion(); document.getElementById('quizSection').scrollIntoView({behavior:'smooth'}); playClick(); }
+function toggleBmReport(i,btn){ if(bookmarked.has(i)) bookmarked.delete(i); else bookmarked.add(i); renderReportList(); renderPalette(); playClick(); }
+function drawCharts(c,w,s){ charts.forEach(ch=>ch.destroy()); charts=[]; charts.push(new Chart(document.getElementById('chartDoughnut'),{type:'doughnut',data:{labels:['صحيحة','تحتاج مراجعة','متخطّى'],datasets:[{data:[c,w,s],backgroundColor:['#22c55e','#ef4444','#D4AF37'],borderWidth:0}]},options:{plugins:{legend:{labels:{color:'#fff',font:{family:'Cairo',weight:'bold'}}}}}}));
+const G=[[0,13],[13,32],[32,40]]; const ok=G.map(g=>state.slice(g[0],g[1]).filter(x=>x.firstCorrect===true).length); const tot=G.map(g=>g[1]-g[0]);
+charts.push(new Chart(document.getElementById('chartBars'),{type:'bar',data:{labels:['أساسيات Recursion Q1-13','Factorial وFibonacci Q14-32','البنية والأمثلة Q33-40'],datasets:[{label:'صحيحة',data:ok,backgroundColor:'#22c55e',borderRadius:10},{label:'خاطئة/متخطّى',data:tot.map((t,i)=>t-ok[i]),backgroundColor:'#ef4444',borderRadius:10}]},options:{scales:{x:{ticks:{color:'#fff'}},y:{ticks:{color:'#fff'},beginAtZero:true,max:19}},plugins:{legend:{labels:{color:'#fff'}}}}})); }
+function restartQuiz(){ if(!confirm('هل تريدين إعادة الاختبار من جديد يا أبرار؟')) return; state=QUESTIONS.map(()=>({chosen:null,first:null,attempts:0,done:false,skipped:false,firstCorrect:null})); qi=0; xp=0; streak=0; bestStreak=0; correctFirst=0; seconds=0; started=false; clearInterval(timerInt); document.getElementById('timerHero').textContent='00:00'; document.getElementById('reportSection').classList.add('hidden'); showOnlyWrong=false; updateHUD(); renderQuestion(); scrollToQuiz(); toast('🔄 بداية جديدة موفقة يا بطلة!'); }
+function shareResult(){ const c=state.filter(s=>s.firstCorrect).length; const t=`🏆 نتيجة البطلة أبرار الحربي في مراجعة Recursion: ${c}/${N} (${Math.round(c/N*100)}%) — أحسنتِ أبرار كمّلي يا بطلة! 👑`; if(navigator.share){ navigator.share({title:'نتيجتي',text:t}).catch(()=>{}); } else { navigator.clipboard.writeText(t).then(()=>toast('📋 تم نسخ النتيجة للمشاركة!')); } }
+
+
+/* WHATSAPP REPORT TO DR. MOHAMMED */
+const DR_WA='966540058614';
+function sendWhatsApp(){
+ const c=state.filter(x=>x.firstCorrect===true).length;
+ const w=state.filter(x=>x.firstCorrect===false).length;
+ const sk=state.filter(x=>!x.done).length;
+ const total=QUESTIONS.length;
+ const pct=Math.round(c/total*100);
+ const L=['A','B','C','D'];
+ const sh=(q,i)=> i===null||i===undefined ? '—' : L[i];
+ const wrongLines=[];
+ QUESTIONS.forEach((q,idx)=>{ const st=state[idx]; if(st.firstCorrect!==true){ wrongLines.push('Q'+q.id+' (ص'+q.page+'): '+sh(q,st.first)+' ← الصحيح: '+sh(q,q.correct)); } });
+ let txt='السلام عليكم دكتور محمد 👋\n';
+ txt+='تقرير مراجعة Recursion – COCS-304 Data Structures\n';
+ txt+='الطالبة: أبرار الحربي\n';
+ txt+='━━━━━━━━━━\n';
+ txt+='النتيجة (من أول إجابة): '+c+' / '+total+' ('+pct+'%)\n';
+ txt+='✅ صحيحة: '+c+'  ❌ خاطئة: '+w+'  ⏭️ متخطّاة: '+sk+'\n';
+ txt+='⏱️ الزمن: '+fmt(seconds)+'  🔥 أفضل سلسلة: '+bestStreak+'\n';
+ txt+='━━━━━━━━━━\n';
+ if(wrongLines.length){ txt+='الأسئلة التي تحتاج مراجعة ('+wrongLines.length+'):\n'+wrongLines.join('\n')+'\n'; }
+ else { txt+='🎉 أجبت على جميع الأسئلة بشكل صحيح من أول مرة!\n'; }
+ const url='https://wa.me/'+DR_WA+'?text='+encodeURIComponent(txt);
+ const win=window.open(url,'_blank');
+ if(!win){ location.href=url; }
+}
+
+/* BG STARS */
+(function(){ const cv=document.getElementById('stars'),cx=cv.getContext('2d'); let W,H,pts=[]; function rs(){ W=cv.width=innerWidth; H=cv.height=innerHeight; pts=Array.from({length:110},()=>({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.8+.4,s:Math.random()*.4+.1,g:Math.random()>.85})); } rs(); addEventListener('resize',rs); (function an(){ cx.clearRect(0,0,W,H); pts.forEach(p=>{ p.y-=p.s; if(p.y<0)p.y=H; cx.beginPath(); cx.arc(p.x,p.y,p.r,0,7); cx.fillStyle=p.g?'rgba(245,214,123,.9)':'rgba(255,255,255,.5)'; cx.fill(); }); requestAnimationFrame(an); })(); })();
+
+/* KEYBOARD */
+document.addEventListener('keydown',e=>{ if(!document.getElementById('reportSection').classList.contains('hidden') && e.key==='Escape') closeCheer(); if(e.key>='1'&&e.key<='4'){ const q=QUESTIONS[qi]; const idx=parseInt(e.key)-1; if(idx<q.opts.en.length) answer(idx); } if(e.key==='t'||e.key==='T'||e.key==='f'||e.key==='F') toggleTranslateCurrent(); if(e.key==='ArrowLeft') nextQ(); if(e.key==='ArrowRight') prevQ(); });
+
+/* INIT */
+window.onload=function(){
+let p=0; const li=setInterval(()=>{ p+=12; document.getElementById('loadBar').style.width=Math.min(100,p)+'%'; if(p>=100){ clearInterval(li); setTimeout(()=>{ document.getElementById('preloader').style.opacity='0'; setTimeout(()=>document.getElementById('preloader').remove(),700); },300); } },120);
+document.getElementById('bestScoreHero').textContent=(localStorage.getItem('abrar_best_recursion')||'0')+'%';
+updateHUD(); renderQuestion(); renderPalette();
+setTimeout(()=>toast('👑 أهلًا أبرار! اضغطي <b>🌐 ترجم</b> بجانب أي سؤال لرؤية الترجمة العربية فورًا'),1800);
+};
+</script>
+</body>
+</html>
